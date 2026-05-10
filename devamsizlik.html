@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Devamsızlık">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Devamsızlık Takip</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Devams%C4%B1zl%C4%B1k%20Takip%22%2C%22short_name%22%3A%22Devams%C4%B1zl%C4%B1k%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080810%22%2C%22theme_color%22%3A%22%23080810%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIj8%2BPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI%2BPHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSIyNCIgZmlsbD0iIzA4MDgxMCIvPjx0ZXh0IHg9Ijk2IiB5PSIxMjUiIGZvbnQtc2l6ZT0iMTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZThhMjMwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPkQ8L3RleHQ%2BPC9zdmc%2B%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIyNCIgZmlsbD0iIzA4MDgxMCIvPjx0ZXh0IHg9IjkwIiB5PSIxMTgiIGZvbnQtc2l6ZT0iOTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNlOGEyMzAiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+RDwvdGV4dD48L3N2Zz4=">
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080810; --bg2:#0f0f1a; --surface:#13131f; --surface2:#1a1a2a; --surface3:#222235;
+  --border:#2a2a40; --border2:#35355a; --text:#ededf5; --muted:#6060a0; --muted2:#4a4a78;
+  --gold:#e8a230; --gold2:#f5c060; --safe:#34d399; --warn:#fbbf24; --danger:#f87171; --exceeded:#ef4444; --accent:#7c6af0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Epilogue',sans-serif;min-height:100dvh;overflow-x:hidden;}
+.screen{display:none;min-height:100dvh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ── SETUP ── */
+#setupScreen{padding:max(48px,env(safe-area-inset-top)) 0 max(32px,env(safe-area-inset-bottom));}
+.setup-wrap{max-width:540px;margin:0 auto;padding:0 20px;width:100%;flex:1;display:flex;flex-direction:column;}
+.setup-brand{margin-bottom:40px;}
+.setup-brand-name{font-size:13px;font-family:'Fira Code',monospace;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+.setup-headline{font-size:clamp(28px,6vw,42px);font-weight:900;line-height:1.1;letter-spacing:-1px;}
+.setup-headline em{font-style:normal;color:var(--gold);}
+.setup-sub{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.6;}
+.steps-indicator{display:flex;gap:6px;margin-bottom:32px;}
+.step-dot{height:3px;border-radius:2px;background:var(--border2);flex:1;transition:background 0.3s;}
+.step-dot.active{background:var(--gold);} .step-dot.done{background:var(--safe);}
+.step-panel{display:none;flex-direction:column;gap:0;}
+.step-panel.active{display:flex;}
+.step-title{font-size:11px;font-family:'Fira Code',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:20px;}
+.field-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.field-label{font-size:11px;font-family:'Fira Code',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;}
+.field-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Epilogue',sans-serif;font-size:15px;font-weight:500;padding:13px 16px;outline:none;transition:border-color 0.2s,background 0.2s;width:100%;appearance:none;-webkit-appearance:none;}
+.field-input:focus{border-color:var(--gold);background:var(--surface3);}
+.field-input::placeholder{color:var(--muted2);}
+.stepper{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.stepper-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;font-weight:300;padding:10px 18px;transition:all 0.15s;line-height:1;flex-shrink:0;}
+.stepper-btn:hover{background:var(--surface3);color:var(--gold);}
+.stepper-val{flex:1;text-align:center;font-family:'Fira Code',monospace;font-size:20px;font-weight:600;color:var(--gold);padding:10px 0;}
+.days-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.day-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'Fira Code',monospace;font-size:11px;padding:10px 4px;text-align:center;transition:all 0.15s;user-select:none;-webkit-user-select:none;line-height:1.3;}
+.day-btn:hover{border-color:var(--gold);color:var(--text);}
+.day-btn.selected{background:var(--gold);border-color:var(--gold);color:#000;font-weight:600;}
+.course-setup-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.course-setup-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;animation:slideIn 0.2s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.course-setup-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.course-setup-meta{font-size:11px;font-family:'Fira Code',monospace;color:var(--muted);}
+.btn-remove-course{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;border-radius:6px;transition:all 0.15s;}
+.btn-remove-course:hover{background:#3d0010;color:var(--exceeded);}
+.add-course-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;}
+.add-course-title{font-size:11px;font-family:'Fira Code',monospace;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-primary{background:var(--gold);border:none;border-radius:12px;color:#000;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:15px;font-weight:800;letter-spacing:0.3px;padding:15px 24px;transition:all 0.2s;width:100%;}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-1px);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+.btn-secondary{background:none;border:1px solid var(--border2);border-radius:12px;color:var(--muted);cursor:pointer;font-family:'Epilogue',sans-serif;font-size:14px;font-weight:600;padding:13px 20px;transition:all 0.2s;width:100%;}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold);}
+.btn-small{background:var(--surface3);border:1px solid var(--border2);border-radius:8px;color:var(--text);cursor:pointer;font-family:'Epilogue',sans-serif;font-size:12px;font-weight:700;padding:9px 14px;transition:all 0.15s;}
+.btn-small:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+.step-nav{display:flex;gap:10px;margin-top:8px;}
+.step-nav .btn-primary{flex:1;}
+.step-nav .btn-secondary{width:auto;padding:13px 18px;}
+.empty-courses{text-align:center;padding:20px;font-size:12px;font-family:'Fira Code',monospace;color:var(--muted2);border:1px dashed var(--border);border-radius:10px;margin-bottom:20px;}
+
+/* ── DASHBOARD ── */
+#dashScreen{padding:max(0px,env(safe-area-inset-top)) 0 max(24px,env(safe-area-inset-bottom));}
+.dash-wrap{max-width:760px;margin:0 auto;padding:0 16px;width:100%;}
+.dash-header{display:flex;justify-content:space-between;align-items:center;padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+.dash-brand{display:flex;flex-direction:column;gap:2px;}
+.dash-brand-tag{font-size:10px;font-family:'Fira Code',monospace;color:var(--gold);letter-spacing:2px;text-transform:uppercase;}
+.dash-brand-name{font-size:20px;font-weight:900;letter-spacing:-0.5px;color:var(--text);}
+.dash-header-right{display:flex;align-items:center;gap:10px;}
+.dash-date{font-size:11px;font-family:'Fira Code',monospace;color:var(--muted);text-align:right;line-height:1.6;}
+.btn-settings{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-size:16px;padding:7px 10px;transition:all 0.15s;line-height:1;}
+.btn-settings:hover{border-color:var(--gold);color:var(--gold);}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--border);transition:background 0.3s;}
+.stat-card.c-gold::after{background:var(--gold);} .stat-card.c-safe::after{background:var(--safe);} .stat-card.c-warn::after{background:var(--warn);} .stat-card.c-danger::after{background:var(--danger);}
+.stat-label{font-size:9px;font-family:'Fira Code',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.stat-value{font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px;color:var(--text);}
+.stat-card.c-gold .stat-value{color:var(--gold);} .stat-card.c-safe .stat-value{color:var(--safe);} .stat-card.c-warn .stat-value{color:var(--warn);} .stat-card.c-danger .stat-value{color:var(--danger);}
+.add-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:24px;}
+.panel-label{font-size:10px;font-family:'Fira Code',monospace;color:var(--gold);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;}
+.input-date{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Fira Code',monospace;font-size:14px;padding:12px 14px;outline:none;width:100%;transition:border-color 0.2s;appearance:none;-webkit-appearance:none;margin-bottom:14px;}
+.input-date:focus{border-color:var(--gold);}
+.day-info{font-size:11px;font-family:'Fira Code',monospace;color:var(--muted);margin-bottom:10px;}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Fira Code',monospace;font-size:12px;padding:7px 12px;transition:all 0.15s;user-select:none;-webkit-user-select:none;}
+.chip:hover{border-color:var(--gold);color:var(--text);}
+.chip.selected{background:rgba(232,162,48,0.15);border-color:var(--gold);color:var(--gold);font-weight:600;}
+.chip.exceeded{border-color:var(--exceeded);opacity:0.45;cursor:not-allowed;}
+.chip-cnt{font-size:10px;opacity:0.6;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;}
+.chip.selected .chip-cnt{background:rgba(232,162,48,0.2);}
+.btn-save{background:var(--gold);border:none;border-radius:10px;color:#000;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:14px;font-weight:800;padding:12px 22px;transition:all 0.2s;}
+.btn-save:hover{background:var(--gold2);} .btn-save:disabled{opacity:0.25;cursor:not-allowed;}
+.sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.sec-label{font-size:10px;font-family:'Fira Code',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:2px;}
+.courses-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+@media(max-width:480px){.courses-grid{grid-template-columns:1fr;}}
+.course-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.15s;}
+.course-card:hover{transform:translateY(-1px);}
+.course-card-accent{position:absolute;top:0;left:0;width:100%;height:3px;background:var(--safe);border-radius:14px 14px 0 0;transition:background 0.3s;}
+.course-card.s-warn .course-card-accent{background:var(--warn);}
+.course-card.s-danger .course-card-accent{background:var(--danger);}
+.course-card.s-exceeded{border-color:rgba(239,68,68,0.4);}
+.course-card.s-exceeded .course-card-accent{background:var(--exceeded);}
+.course-card-num{position:absolute;top:16px;right:16px;font-size:26px;font-weight:900;line-height:1;color:var(--safe);font-family:'Fira Code',monospace;letter-spacing:-1px;}
+.course-card.s-warn .course-card-num{color:var(--warn);} .course-card.s-danger .course-card-num{color:var(--danger);} .course-card.s-exceeded .course-card-num{color:var(--exceeded);}
+.course-card-name{font-size:13px;font-weight:800;line-height:1.3;margin-top:4px;margin-bottom:4px;padding-right:44px;}
+.course-card-day{font-size:10px;font-family:'Fira Code',monospace;color:var(--muted);margin-bottom:14px;}
+.progress-bg{background:var(--surface3);border-radius:3px;height:4px;overflow:hidden;margin-bottom:10px;}
+.progress-fill{height:100%;border-radius:3px;background:var(--safe);transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+.course-card.s-warn .progress-fill{background:var(--warn);} .course-card.s-danger .progress-fill{background:var(--danger);} .course-card.s-exceeded .progress-fill{background:var(--exceeded);width:100%!important;}
+.course-card-footer{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-family:'Fira Code',monospace;color:var(--muted);}
+.badge{font-size:9px;font-family:'Fira Code',monospace;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-exceeded{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);color:var(--exceeded);}
+.badge-last{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--danger);}
+.badge-ok{color:var(--safe);}
+.log-wrap{margin-bottom:32px;}
+.log-list{display:flex;flex-direction:column;gap:8px;}
+.log-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.log-date-col{font-family:'Fira Code',monospace;font-size:11px;color:var(--muted);min-width:76px;line-height:1.5;}
+.log-courses-col{display:flex;flex-wrap:wrap;gap:5px;flex:1;}
+.log-badge{background:var(--surface3);border-radius:5px;font-family:'Fira Code',monospace;font-size:11px;padding:3px 8px;color:var(--text);}
+.btn-del-log{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:17px;line-height:1;padding:3px 6px;border-radius:5px;transition:all 0.15s;flex-shrink:0;}
+.btn-del-log:hover{background:rgba(239,68,68,0.12);color:var(--exceeded);}
+.empty-state{text-align:center;padding:28px 20px;font-size:12px;font-family:'Fira Code',monospace;color:var(--muted2);border:1px dashed var(--border);border-radius:10px;}
+.btn-link{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Fira Code',monospace;font-size:10px;padding:4px 8px;border-radius:5px;text-decoration:underline;transition:color 0.15s;}
+.btn-link:hover{color:var(--gold);}
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
+.install-bar{display:none;background:var(--surface);border:1px solid rgba(232,162,48,0.3);border-radius:12px;padding:12px 16px;margin-bottom:20px;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-family:'Fira Code',monospace;color:var(--text);}
+.install-bar.visible{display:flex;}
+.btn-install{background:var(--gold);border:none;border-radius:7px;color:#000;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:12px;font-weight:800;padding:6px 14px;}
+.btn-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;}
+
+/* ── CUSTOM MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 24px;max-width:360px;width:100%;transform:translateY(16px) scale(0.97);transition:transform 0.25s cubic-bezier(.4,0,.2,1);}
+.modal-overlay.open .modal-box{transform:none;}
+.modal-icon{font-size:32px;margin-bottom:14px;}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:8px;letter-spacing:-0.3px;}
+.modal-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px;}
+.modal-btns{display:flex;flex-direction:column;gap:8px;}
+.modal-btn-confirm{background:var(--exceeded);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:14px;font-weight:800;padding:13px;transition:opacity 0.15s;}
+.modal-btn-confirm:hover{opacity:0.85;}
+.modal-btn-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-family:'Epilogue',sans-serif;font-size:14px;font-weight:600;padding:13px;transition:all 0.15s;}
+.modal-btn-cancel:hover{border-color:var(--border2);color:var(--text);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border2);border-radius:50px;color:var(--text);font-family:'Fira Code',monospace;font-size:12px;padding:11px 20px;opacity:0;transition:all 0.3s cubic-bezier(.4,0,.2,1);z-index:9999;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.t-warn{border-color:var(--warn);color:var(--warn);} .toast.t-danger{border-color:var(--danger);color:var(--danger);} .toast.t-ok{border-color:var(--safe);color:var(--safe);}
+
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp 0.35s ease forwards;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ SETUP ══════════ -->
+<div id="setupScreen" class="screen">
+  <div class="setup-wrap">
+    <div class="setup-brand fade-up">
+      <div class="setup-brand-name">// devamsızlık.takip</div>
+      <div class="setup-headline">Derslerin. <em>Kontrolü</em><br>senin elinde.</div>
+      <div class="setup-sub">Kurslarını ve dönemi bir kez ayarla, gerisini biz halledelim.</div>
+    </div>
+
+    <div class="steps-indicator" style="margin-bottom:8px;">
+      <div class="step-dot active" id="dot0"></div>
+      <div class="step-dot" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+    </div>
+
+    <!-- Step 0 -->
+    <div class="step-panel active" id="step0">
+      <div class="step-title">Adım 1 — Dönem Ayarları</div>
+      <div class="field-group">
+        <div class="field-label">Dönem Adı (isteğe bağlı)</div>
+        <input class="field-input" id="semesterName" type="text" placeholder="örn. 2025–2026 Bahar" maxlength="50">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Dönem Bitiş Tarihi</div>
+        <input class="field-input" id="endDate" type="date">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Ders Başına Maksimum Devamsızlık</div>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjustMax(-1)">−</button>
+          <div class="stepper-val" id="maxVal">4</div>
+          <button class="stepper-btn" onclick="adjustMax(1)">+</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;font-family:'Fira Code',monospace;">5. devamsızlıkta sıkıntı = max 4 gir</div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-primary" onclick="goStep(1)">Devam →</button>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-panel" id="step1">
+      <div class="step-title">Adım 2 — Dersleri Ekle</div>
+      <div id="courseSetupList" class="course-setup-list"></div>
+      <div class="add-course-form">
+        <div class="add-course-title">+ Ders Ekle</div>
+        <div class="field-group">
+          <div class="field-label">Ders Adı</div>
+          <input class="field-input" id="cName" type="text" placeholder="örn. Bizans Tarihi" maxlength="60">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Hangi Günler?</div>
+          <div class="days-grid">
+            <div class="day-btn" data-day="1" onclick="toggleDay(1)">Pzt</div>
+            <div class="day-btn" data-day="2" onclick="toggleDay(2)">Sal</div>
+            <div class="day-btn" data-day="3" onclick="toggleDay(3)">Çar</div>
+            <div class="day-btn" data-day="4" onclick="toggleDay(4)">Per</div>
+            <div class="day-btn" data-day="5" onclick="toggleDay(5)">Cum</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="field-group" style="margin-bottom:0">
+            <div class="field-label">Mevcut Devamsızlık</div>
+            <div class="stepper">
+              <button class="stepper-btn" onclick="adjustCur(-1)">−</button>
+              <div class="stepper-val" id="curVal">0</div>
+              <button class="stepper-btn" onclick="adjustCur(1)">+</button>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:flex-end;">
+            <button class="btn-small" onclick="addCourse()" style="height:46px;">Ekle ↵</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="btn-secondary" onclick="goStep(0)" style="width:auto;padding:13px 16px;">←</button>
+        <button class="btn-primary" id="btnStep2" onclick="goStep(2)" disabled>Devam →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-panel" id="step2">
+      <div class="step-title">Adım 3 — Özet &amp; Başla</div>
+      <div id="summaryBox" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px;"></div>
+      <button class="btn-primary" onclick="launchDash()">Uygulamayı Başlat 🚀</button>
+      <div style="margin-top:10px;">
+        <button class="btn-secondary" onclick="goStep(1)">← Düzenle</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashScreen" class="screen">
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <div class="dash-brand">
+        <div class="dash-brand-tag">// devamsızlık.takip</div>
+        <div class="dash-brand-name" id="dashTitle">Takip</div>
+      </div>
+      <div class="dash-header-right">
+        <div class="dash-date" id="dashDate"></div>
+        <button class="btn-settings" onclick="askSettings()" title="Ayarlar">⚙</button>
+      </div>
+    </div>
+
+    <div class="install-bar" id="installBar">
+      <span>📲 Ana ekrana ekle</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-install" id="btnInstall">Ekle</button>
+        <button class="btn-x" id="btnDismiss">×</button>
+      </div>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="add-panel">
+      <div class="panel-label">// Devamsızlık Ekle</div>
+      <input class="input-date" id="absDate" type="date">
+      <div class="day-info" id="dayInfo"></div>
+      <div class="chips-wrap" id="chipsWrap"></div>
+      <button class="btn-save" id="btnSave" disabled onclick="saveAbsence()">Kaydet</button>
+    </div>
+
+    <div class="sec-header">
+      <div class="sec-label">// Dersler</div>
+    </div>
+    <div class="courses-grid" id="coursesGrid"></div>
+
+    <hr class="divider">
+
+    <div class="log-wrap">
+      <div class="sec-header">
+        <div class="sec-label">// Geçmiş</div>
+        <button class="btn-link" onclick="askClearLog()">Tümünü Sil</button>
+      </div>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL ══════════ -->
+<div class="modal-overlay" id="modal" onclick="closeModalOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-icon" id="modalIcon">⚠️</div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-confirm" id="modalConfirm">Evet, devam et</button>
+      <button class="modal-btn-cancel" onclick="closeModal()">Vazgeç</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const DAY_NAMES=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+const DAY_SHORT=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+let cfg=null, log=[], selectedCourses=new Set();
+let setupCourses=[], setupDays=new Set(), setupCurAbsence=0, setupMax=4;
+let counts={};
+
+function loadState(){
+  try{const c=localStorage.getItem('dav2_cfg'),l=localStorage.getItem('dav2_log');if(c)cfg=JSON.parse(c);if(l)log=JSON.parse(l);}catch(e){cfg=null;log=[];}
+}
+function saveState(){
+  try{localStorage.setItem('dav2_cfg',JSON.stringify(cfg));localStorage.setItem('dav2_log',JSON.stringify(log));}catch(e){}
+}
+
+// ── Modal ──
+let modalCallback=null;
+
+function openModal(icon, title, desc, confirmText, cb){
+  document.getElementById('modalIcon').textContent=icon;
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalDesc').textContent=desc;
+  document.getElementById('modalConfirm').textContent=confirmText;
+  modalCallback=cb;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  modalCallback=null;
+}
+
+function closeModalOnBg(e){
+  if(e.target===document.getElementById('modal')) closeModal();
+}
+
+document.getElementById('modalConfirm').addEventListener('click',()=>{
+  const cb=modalCallback;
+  closeModal();
+  if(cb) cb();
+});
+
+// ── Setup ──
+let currentStep=0;
+
+function goStep(n){
+  if(n===1){
+    if(!document.getElementById('endDate').value){showToast('Bitiş tarihi gir');return;}
+  }
+  if(n===2){
+    if(!setupCourses.length){showToast('En az 1 ders ekle');return;}
+    renderSummary();
+  }
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  ['dot0','dot1','dot2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='step-dot'+(i<n?' done':i===n?' active':'');
+  });
+  currentStep=n;
+}
+
+function adjustMax(d){setupMax=Math.max(1,Math.min(20,setupMax+d));document.getElementById('maxVal').textContent=setupMax;}
+
+function toggleDay(d){
+  const btn=document.querySelector(`.day-btn[data-day="${d}"]`);
+  if(setupDays.has(d)){setupDays.delete(d);btn.classList.remove('selected');}
+  else{setupDays.add(d);btn.classList.add('selected');}
+}
+
+function adjustCur(d){
+  setupCurAbsence=Math.max(0,Math.min(setupMax,setupCurAbsence+d));
+  document.getElementById('curVal').textContent=setupCurAbsence;
+}
+
+function addCourse(){
+  const name=document.getElementById('cName').value.trim();
+  if(!name){showToast('Ders adı gir');return;}
+  if(!setupDays.size){showToast('En az 1 gün seç');return;}
+  setupCourses.push({id:'c'+Date.now(),name,days:[...setupDays].sort(),initial:setupCurAbsence});
+  document.getElementById('cName').value='';
+  setupDays.clear();
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('selected'));
+  setupCurAbsence=0;
+  document.getElementById('curVal').textContent=0;
+  renderCourseSetupList();
+  document.getElementById('btnStep2').disabled=false;
+  showToast('✓ Ders eklendi','t-ok');
+}
+
+function removeCourseSetup(id){
+  setupCourses=setupCourses.filter(c=>c.id!==id);
+  renderCourseSetupList();
+  document.getElementById('btnStep2').disabled=setupCourses.length===0;
+}
+
+function renderCourseSetupList(){
+  const el=document.getElementById('courseSetupList');
+  if(!setupCourses.length){el.innerHTML='<div class="empty-courses">Henüz ders eklenmedi.</div>';return;}
+  el.innerHTML=setupCourses.map(c=>`
+    <div class="course-setup-item">
+      <div><div class="course-setup-name">${esc(c.name)}</div>
+      <div class="course-setup-meta">${c.days.map(d=>DAY_SHORT[d]).join(' · ')} &nbsp;|&nbsp; Başlangıç: ${c.initial}</div></div>
+      <button class="btn-remove-course" onclick="removeCourseSetup('${c.id}')">×</button>
+    </div>`).join('');
+}
+
+function renderSummary(){
+  const ed=document.getElementById('endDate').value;
+  const sn=document.getElementById('semesterName').value.trim()||'Dönem';
+  const daysLeft=Math.max(0,Math.ceil((new Date(ed+'T12:00:00')-new Date())/86400000));
+  document.getElementById('summaryBox').innerHTML=`
+    <div style="margin-bottom:14px"><div class="stat-label">Dönem</div><div style="font-size:16px;font-weight:800;">${esc(sn)}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div><div class="stat-label">Bitiş</div><div style="font-family:'Fira Code',monospace;font-size:13px">${new Date(ed+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div></div>
+      <div><div class="stat-label">Kalan Gün</div><div style="font-size:20px;font-weight:900;color:var(--safe)">${daysLeft}</div></div>
+      <div><div class="stat-label">Max Devamsızlık</div><div style="font-size:20px;font-weight:900;color:var(--gold)">${setupMax}</div></div>
+      <div><div class="stat-label">Ders Sayısı</div><div style="font-size:20px;font-weight:900;">${setupCourses.length}</div></div>
+    </div>
+    <div class="stat-label" style="margin-bottom:8px">Dersler</div>
+    ${setupCourses.map(c=>`<div style="font-size:12px;font-family:'Fira Code',monospace;color:var(--muted);padding:3px 0;">${esc(c.name)} — ${c.days.map(d=>DAY_SHORT[d]).join('/')} — başlangıç: ${c.initial}</div>`).join('')}`;
+}
+
+function launchDash(){
+  cfg={semesterName:document.getElementById('semesterName').value.trim()||'Dönem',endDate:document.getElementById('endDate').value,maxAbsences:setupMax,courses:setupCourses};
+  log=[];
+  saveState();
+  showDash();
+}
+
+// ── Dashboard ──
+function recalc(){
+  counts={};
+  cfg.courses.forEach(c=>counts[c.id]=c.initial);
+  log.forEach(e=>e.courses.forEach(cid=>{counts[cid]=(counts[cid]||0)+1;}));
+}
+
+function showDash(){
+  document.getElementById('setupScreen').classList.remove('active');
+  document.getElementById('dashScreen').classList.add('active');
+  document.getElementById('absDate').value=new Date().toISOString().split('T')[0];
+  render();
+}
+
+function render(){
+  recalc();
+  const MAX=cfg.maxAbsences;
+  const today=new Date();
+  const end=new Date(cfg.endDate+'T12:00:00');
+  const daysLeft=Math.max(0,Math.ceil((end-today)/86400000));
+  const total=cfg.courses.reduce((s,c)=>s+(counts[c.id]||0),0);
+  const atRisk=cfg.courses.filter(c=>(counts[c.id]||0)>=MAX-1).length;
+  const exceeded=cfg.courses.filter(c=>(counts[c.id]||0)>=MAX).length;
+
+  document.getElementById('dashTitle').textContent=cfg.semesterName;
+  document.getElementById('dashDate').textContent=today.toLocaleDateString('tr-TR',{day:'2-digit',month:'long'})+'\n'+today.getFullYear();
+
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card c-gold"><div class="stat-label">Toplam Devamsızlık</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card ${atRisk>0?'c-warn':'c-safe'}"><div class="stat-label">Risk Altında</div><div class="stat-value">${atRisk}</div></div>
+    <div class="stat-card ${exceeded>0?'c-danger':'c-safe'}"><div class="stat-label">Sınırı Aşan</div><div class="stat-value">${exceeded}</div></div>
+    <div class="stat-card ${daysLeft<14?'c-warn':'c-safe'}"><div class="stat-label">Kalan Gün</div><div class="stat-value">${daysLeft}</div></div>`;
+
+  document.getElementById('coursesGrid').innerHTML=cfg.courses.map(c=>{
+    const n=counts[c.id]||0,rem=MAX-n,pct=Math.min(100,(n/MAX)*100);
+    const status=n>MAX?'s-exceeded':n>=MAX?'s-danger':n>=MAX-1?'s-warn':'';
+    const badge=n>MAX?`<span class="badge badge-exceeded">⚠ Aşıldı</span>`:n>=MAX?`<span class="badge badge-last">Son Hak!</span>`:`<span class="badge badge-ok">${rem} hak kaldı</span>`;
+    return `<div class="course-card ${status}"><div class="course-card-accent"></div>
+      <div class="course-card-num">${n}</div>
+      <div class="course-card-name">${esc(c.name)}</div>
+      <div class="course-card-day">${c.days.map(d=>DAY_NAMES[d]).join(' · ')}</div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="course-card-footer"><span>${n}/${MAX}</span>${badge}</div></div>`;
+  }).join('');
+
+  const list=document.getElementById('logList');
+  if(!log.length){list.innerHTML='<div class="empty-state">Henüz devamsızlık kaydı yok.</div>';}
+  else{
+    list.innerHTML=[...log].sort((a,b)=>b.date.localeCompare(a.date)).map(entry=>{
+      const d=new Date(entry.date+'T12:00:00');
+      const badges=entry.courses.map(cid=>{const c=cfg.courses.find(x=>x.id===cid);return`<span class="log-badge">${c?shortN(c.name):cid}</span>`;}).join('');
+      return`<div class="log-item">
+        <div class="log-date-col">${DAY_SHORT[d.getDay()]}<br>${d.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'})}</div>
+        <div class="log-courses-col">${badges}</div>
+        <button class="btn-del-log" onclick="delLog('${entry.id}')">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  updateAddPanel();
+}
+
+document.getElementById('absDate').addEventListener('change',()=>{selectedCourses.clear();updateAddPanel();});
+
+function updateAddPanel(){
+  if(!cfg)return;
+  const MAX=cfg.maxAbsences,dateVal=document.getElementById('absDate').value;
+  const dayInfo=document.getElementById('dayInfo'),chips=document.getElementById('chipsWrap'),btn=document.getElementById('btnSave');
+  if(!dateVal){dayInfo.textContent='';chips.innerHTML='';btn.disabled=true;return;}
+  const dow=new Date(dateVal+'T12:00:00').getDay();
+  const todayCourses=cfg.courses.filter(c=>c.days.includes(dow));
+  dayInfo.textContent=DAY_NAMES[dow]+' günü:';
+  if(!todayCourses.length){chips.innerHTML='<span style="font-size:12px;color:var(--muted2);font-family:\'Fira Code\',monospace;">Bu gün ders yok.</span>';btn.disabled=true;return;}
+  chips.innerHTML=todayCourses.map(c=>{
+    const n=counts[c.id]||0,ex=n>MAX,sel=selectedCourses.has(c.id);
+    return`<div class="chip ${ex?'exceeded':''} ${sel?'selected':''}" onclick="${ex?'':("toggleChip('"+c.id+"')")}">
+      ${esc(shortN(c.name))}<span class="chip-cnt">${n}/${MAX}</span></div>`;
+  }).join('');
+  btn.disabled=selectedCourses.size===0;
+}
+
+function toggleChip(id){selectedCourses.has(id)?selectedCourses.delete(id):selectedCourses.add(id);updateAddPanel();document.getElementById('btnSave').disabled=selectedCourses.size===0;}
+
+function saveAbsence(){
+  const dateVal=document.getElementById('absDate').value;
+  if(!dateVal||!selectedCourses.size)return;
+  const existing=log.find(e=>e.date===dateVal);
+  if(existing){selectedCourses.forEach(cid=>existing.courses.push(cid));existing.courses=[...new Set(existing.courses)];}
+  else log.push({id:Date.now().toString(),date:dateVal,courses:[...selectedCourses]});
+  saveState();recalc();
+  const MAX=cfg.maxAbsences;
+  const asild=[...selectedCourses].filter(cid=>(counts[cid]||0)>MAX);
+  const son=[...selectedCourses].filter(cid=>(counts[cid]||0)===MAX);
+  if(asild.length)showToast('⚠ Sınır aşıldı: '+asild.map(cid=>shortN(cfg.courses.find(c=>c.id===cid)?.name||'')).join(', '),'t-danger');
+  else if(son.length)showToast('⚡ Son hak: '+son.map(cid=>shortN(cfg.courses.find(c=>c.id===cid)?.name||'')).join(', '),'t-warn');
+  else showToast('✓ Kaydedildi','t-ok');
+  selectedCourses.clear();
+  document.getElementById('absDate').value='';
+  render();
+}
+
+function delLog(id){log=log.filter(e=>e.id!==id);saveState();render();showToast('Kayıt silindi');}
+
+// ── Modal triggers (no confirm!) ──
+function askClearLog(){
+  openModal('🗑️','Geçmişi Temizle','Tüm devamsızlık kayıtları silinecek. Ders başlangıç değerleri korunur. Emin misin?','Evet, sil',()=>{
+    log=[];saveState();render();showToast('Geçmiş temizlendi');
+  });
+}
+
+function askSettings(){
+  openModal('⚙️','Ayarlara Dön','Dönem ve ders ayarlarına geri döneceksin. Mevcut devamsızlık kayıtları silinecek. Emin misin?','Evet, ayarlara dön',()=>{
+    cfg=null;log=[];saveState();
+    document.getElementById('dashScreen').classList.remove('active');
+    document.getElementById('setupScreen').classList.add('active');
+    setupCourses=[];setupDays=new Set();setupCurAbsence=0;setupMax=4;
+    document.getElementById('maxVal').textContent=4;
+    document.getElementById('semesterName').value='';
+    document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('selected'));
+    renderCourseSetupList();
+    document.getElementById('btnStep2').disabled=true;
+    goStep(0);
+  });
+}
+
+// ── Helpers ──
+function shortN(name){if(!name)return'';if(name.length>22)return name.split(' ').slice(0,2).join(' ')+'…';return name;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+let toastTimer;
+function showToast(msg,cls=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+cls;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='toast',3000);
+}
+
+// ── Boot ──
+loadState();
+if(cfg&&cfg.courses&&cfg.courses.length){document.getElementById('dashScreen').classList.add('active');render();}
+else{document.getElementById('setupScreen').classList.add('active');renderCourseSetupList();const def=new Date();def.setMonth(def.getMonth()+4);document.getElementById('endDate').value=def.toISOString().split('T')[0];}
+
+// ── PWA ──
+if('serviceWorker' in navigator){
+  const sw=`const C='dav2-v2';const A=[self.location.pathname];self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(A)));self.skipWaiting();});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(e.request))));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBar').classList.add('visible');});
+document.getElementById('btnInstall').addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('installBar').classList.remove('visible');if(outcome==='accepted')showToast('✓ Ana ekrana eklendi!','t-ok');});
+document.getElementById('btnDismiss').addEventListener('click',()=>document.getElementById('installBar').classList.remove('visible'));
+window.addEventListener('appinstalled',()=>{document.getElementById('installBar').classList.remove('visible');showToast('✓ Uygulama kuruldu!','t-ok');});
+</script>
+</body>
+</html>
